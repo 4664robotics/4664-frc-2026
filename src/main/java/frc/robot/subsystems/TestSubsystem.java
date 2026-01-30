@@ -1,11 +1,16 @@
 package frc.robot.subsystems;
 
+import java.util.Optional;
+
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import limelight.Limelight;
 import limelight.networktables.LimelightData;
+import limelight.networktables.LimelightResults;
 import limelight.networktables.LimelightTargetData;
 import limelight.networktables.LimelightSettings.LEDMode;
+import limelight.networktables.target.AprilTagFiducial;
 import limelight.results.RawFiducial;
 
 public class TestSubsystem extends SubsystemBase {
@@ -28,14 +33,28 @@ public class TestSubsystem extends SubsystemBase {
         }
     }
 
-    public void printAprilTag() {
-        limelight.getSettings().withPipelineIndex(0);
-
-        LimelightTargetData scanData = limelight.getData().targetData;
+    public void printAprilTagData() {
+        limelight.getSettings().withCameraOffset(Pose3d.kZero);
+        LimelightData scanData = limelight.getData();
+        
         try {
-            System.out.println("AprilTag ID " + Integer.toString((int)scanData.getAprilTagID()) + "\nAprilTag %: " + Double.toString(scanData.getTargetArea()));
+            System.out.println("Attempting to gather Limelight data!");
+            //System.out.println(scanData);
         } catch(Exception e) {
-            System.out.println("No AprilTag detected!");
+            System.out.println(e);
+        }
+        
+        if (scanData != null) {
+            RawFiducial[] aprilTags = scanData.getRawFiducials(); // get list of april tags
+
+            for (int i = 0; i < aprilTags.length; i++) {
+                    RawFiducial aprilTag = aprilTags[i];
+                    System.out.println("== Tag ID: " + aprilTag.id + " ==");
+
+                    System.out.println("Tx: " + aprilTag.txnc);
+                    System.out.println("Ty: " + aprilTag.tync);
+                    System.out.println("Ta: " + aprilTag.ta);
+            }
         }
     }
 

@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
@@ -27,6 +28,7 @@ import java.io.File;
 import swervelib.SwerveInputStream;
 
 import frc.robot.subsystems.TestSubsystem;
+import frc.robot.subsystems.ExampleSubsystem;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a "declarative" paradigm, very
@@ -37,13 +39,15 @@ public class RobotContainer
 {
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
-  final         CommandXboxController driverXbox = new CommandXboxController(0);
+  final         CommandXboxController driverXbox = new CommandXboxController(1);
+  final         CommandJoystick driverJoystick = new CommandJoystick(0);
   // The robot's subsystems and commands are defined here...
   private final SwerveSubsystem       drivebase  = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
                                                                                 "swerve/neo"));
 
   // OUR THINGIEIES
   TestSubsystem testSubsystem = new TestSubsystem();
+  ExampleSubsystem exampleSubsystem = new ExampleSubsystem();
 
 
 
@@ -191,7 +195,11 @@ public class RobotContainer
       driverXbox.a().onTrue(Commands.runOnce(testSubsystem::turnOnLight));
       driverXbox.b().onTrue(Commands.runOnce(testSubsystem::turnOffLight));
 
-      driverXbox.x().onTrue(Commands.runOnce(testSubsystem::printAprilTag));
+      //driverXbox.x().onTrue(Commands.runOnce(testSubsystem::printAprilTagData));
+
+      driverJoystick.button(9).onTrue(Commands.runOnce(testSubsystem::printAprilTagData));
+
+      driverJoystick.button(8).onTrue(Commands.runOnce(exampleSubsystem::helloWorld));
 
     } else
     {
