@@ -1,6 +1,5 @@
 package frc.robot.commands.swervedrive.auto;
 
-import java.util.Date;
 import java.util.Optional;
 
 import edu.wpi.first.math.geometry.Pose3d;
@@ -37,7 +36,7 @@ public class TargetAutoAlignCommand extends Command {
     public Optional<RawFiducial[]> getAprilTags() {
         limelight.getSettings().withCameraOffset(Pose3d.kZero);
         LimelightData scanData = limelight.getData();
-        
+
         if (scanData != null) {
             return Optional.ofNullable(scanData.getRawFiducials()); // get array of april tags
         }
@@ -45,14 +44,12 @@ public class TargetAutoAlignCommand extends Command {
         return null;
     }
 
-    public double clampCalc(double value, double lowEnd, double highEnd){
-       if(value < lowEnd){
-        return lowEnd;
-       }
-         else if(value > highEnd){
+    public double clampCalc(double value, double lowEnd, double highEnd) {
+        if (value < lowEnd) {
+            return lowEnd;
+        } else if (value > highEnd) {
             return highEnd;
-        }
-        else{
+        } else {
             return value;
         }
     }
@@ -62,7 +59,7 @@ public class TargetAutoAlignCommand extends Command {
             boolean leftTagValid = false;
             boolean rightTagValid = false;
 
-            for (int i = 0; i< 2; i++) {
+            for (int i = 0; i < 2; i++) {
                 if (intArrayContainsValue(leftTagIds, aprilTags[i].id)) {
                     leftTagValid = true;
                 }
@@ -83,14 +80,38 @@ public class TargetAutoAlignCommand extends Command {
         }
     }
 
-    public double getRubberBandingSpeed(double distanceFromCenter) {
-        if (distanceFromCenter > 0.2 || distanceFromCenter < -0.2) {
-            
-            return clampCalc(distanceFromCenter * -0.15, -0.35, 0.35);
+    public TargetAprilTags retrieveValidTargetTags(RawFiducial[] aprilTags) {
+        if (aprilTags.length != 2) {
+            return null;
+        }
+
+        TargetAprilTags tags = new TargetAprilTags();
+        for (int i = 0; i < 2; i++) {
+            if (intArrayContainsValue(leftTagIds, aprilTags[i].id)) {
+                tags.setLeftTag(aprilTags[i]);
+            }
+
+            if (intArrayContainsValue(rightTagIds, aprilTags[i].id)) {
+                tags.setRightTag(aprilTags[i]);
+            }
+        }
+
+        if (tags.isValid()) {
+            return tags;
         } else {
-            return 0.0;
+            return null;
         }
     }
+
+public double getRubberBandingSpeed(double distanceFromCenter) {
+    if (distanceFromCenter > 0.2 || distanceFromCenter < -0.2) {
+
+        return clampCalc(distanceFromCenter * -0.15, -0.35, 0.35);
+    } else {
+        return 0.0;
+    }
+}
+
 
            /*  // CALCULATE DISTANCE THINGY
             if (aprilTags.length == 2) {
@@ -105,31 +126,31 @@ public class TargetAutoAlignCommand extends Command {
             }*/
 
 
-    @Override
-    public void initialize() {
+@Override
+public void initialize() {
 
+}
+
+@Override
+public void execute() {
+    RawFiducial[] aprilTags = getAprilTags().get();
+    if (isValidAprilTags(aprilTags)) {
+        drivebase.zeroGyro();
+        double middle = (aprilTags[1].txnc + aprilTags[0].txnc) / 2;
+
+        drivebase.drive(new Translation2d(0, 0), getRubberBandingSpeed(middle), true);
+    } else {
+        drivebase.drive(new Translation2d(0, 0), 1, true);
     }
+}
 
-    @Override
-    public void execute() {
-        RawFiducial[] aprilTags = getAprilTags().get();
-        if (isValidAprilTags(aprilTags)) {
-            drivebase.zeroGyro();
-            double middle = (aprilTags[1].txnc + aprilTags[0].txnc) / 2;
+@Override
+public boolean isFinished() {
+    return false;
+}
 
-            drivebase.drive(new Translation2d(0, 0), getRubberBandingSpeed(middle), true);
-        } else {
-            drivebase.drive(new Translation2d(0, 0), 1, true);
-        }
-    }
+@Override
+public void end(boolean interrupted) {
 
-    @Override
-    public boolean isFinished() {
-        return false;
-    }
-
-    @Override
-    public void end(boolean interrupted) {
-
-    }
+}
 }
