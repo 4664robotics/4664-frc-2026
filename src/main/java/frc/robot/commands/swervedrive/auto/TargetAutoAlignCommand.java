@@ -1,6 +1,5 @@
 package frc.robot.commands.swervedrive.auto;
 
-import java.util.Date;
 import java.util.Optional;
 
 import edu.wpi.first.apriltag.AprilTag;
@@ -42,7 +41,7 @@ public class TargetAutoAlignCommand extends Command {
     public Optional<RawFiducial[]> getAprilTags() {
         limelight.getSettings().withCameraOffset(Pose3d.kZero);
         LimelightData scanData = limelight.getData();
-        
+
         if (scanData != null) {
             return Optional.ofNullable(scanData.getRawFiducials()); // get array of april tags
         }
@@ -59,14 +58,12 @@ public class TargetAutoAlignCommand extends Command {
         return false;
     }
 
-    public double clampCalc(double value, double lowEnd, double highEnd){
-       if(value < lowEnd){
-        return lowEnd;
-       }
-         else if(value > highEnd){
+    public double clampCalc(double value, double lowEnd, double highEnd) {
+        if (value < lowEnd) {
+            return lowEnd;
+        } else if (value > highEnd) {
             return highEnd;
-        }
-        else{
+        } else {
             return value;
         }
     }
@@ -76,7 +73,7 @@ public class TargetAutoAlignCommand extends Command {
             boolean leftTagValid = false;
             boolean rightTagValid = false;
 
-            for (int i = 0; i< 2; i++) {
+            for (int i = 0; i < 2; i++) {
                 if (intArrayContainsValue(leftTagIds, aprilTags[i].id)) {
                     leftTagValid = true;
                 }
@@ -94,6 +91,29 @@ public class TargetAutoAlignCommand extends Command {
 
         } else {
             return false;
+        }
+    }
+
+    public TargetAprilTags retrieveValidTargetTags(RawFiducial[] aprilTags) {
+        if (aprilTags.length != 2) {
+            return null;
+        }
+
+        TargetAprilTags tags = new TargetAprilTags();
+        for (int i = 0; i < 2; i++) {
+            if (intArrayContainsValue(leftTagIds, aprilTags[i].id)) {
+                tags.setLeftTag(aprilTags[i]);
+            }
+
+            if (intArrayContainsValue(rightTagIds, aprilTags[i].id)) {
+                tags.setRightTag(aprilTags[i]);
+            }
+        }
+
+        if (tags.isValid()) {
+            return tags;
+        } else {
+            return null;
         }
     }
 
@@ -169,8 +189,8 @@ public class TargetAutoAlignCommand extends Command {
         return false;
     }
 
-    @Override
-    public void end(boolean interrupted) {
+@Override
+public void end(boolean interrupted) {
 
-    }
+}
 }
