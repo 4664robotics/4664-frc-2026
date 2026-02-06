@@ -2,7 +2,6 @@ package frc.robot.commands.swervedrive.auto;
 
 import java.util.Optional;
 
-import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -51,7 +50,7 @@ public class TargetAutoAlignCommand extends Command {
 
     // error = the allowed error in precision when deciding if value2 is "approximately" equal to value1
     public boolean isApproximatelyEqual(double value1, double value2, double error) {
-        if (value1 >= value2 - Math.abs(error) || value1 <= value2 + Math.abs(error)) {
+        if (value1 >= value2 - Math.abs(error) && value1 <= value2 + Math.abs(error)) {
             return true;
         }
 
@@ -68,35 +67,9 @@ public class TargetAutoAlignCommand extends Command {
         }
     }
 
-    public boolean isValidAprilTags(RawFiducial[] aprilTags) {
-        if (aprilTags.length == 2) {
-            boolean leftTagValid = false;
-            boolean rightTagValid = false;
-
-            for (int i = 0; i < 2; i++) {
-                if (intArrayContainsValue(leftTagIds, aprilTags[i].id)) {
-                    leftTagValid = true;
-                }
-
-                if (intArrayContainsValue(rightTagIds, aprilTags[i].id)) {
-                    rightTagValid = true;
-                }
-            }
-
-            if (leftTagValid && rightTagValid) {
-                return true;
-            } else {
-                return false;
-            }
-
-        } else {
-            return false;
-        }
-    }
-
     public TargetAprilTags retrieveValidTargetTags(RawFiducial[] aprilTags) {
         if (aprilTags.length != 2) {
-            return null;
+            return new TargetAprilTags();
         }
 
         TargetAprilTags tags = new TargetAprilTags();
@@ -125,19 +98,6 @@ public class TargetAutoAlignCommand extends Command {
         }
     }
 
-    // CALCULATE DISTANCE THINGY
-    public double getCoordinateDistanceBetweenTags(RawFiducial[] apriltags) {
-
-        RawFiducial leftTag = new RawFiducial(0, 0, 0, 0, 0, 0, 0);
-        RawFiducial rightTag = new RawFiducial(0, 0, 0, 0, 0, 0, 0);
-
-
-
-        return Math.sqrt(Math.pow(rightTag.txnc - leftTag.txnc, 2) + Math.pow(rightTag.tync - leftTag.tync, 2));
-    }
-
-
-
     @Override
     public void initialize() {
         currentAligningStage = 0;
@@ -148,35 +108,48 @@ public class TargetAutoAlignCommand extends Command {
     @Override
     public void execute() {
         if (currentAligningStage == 0) {
-            RawFiducial[] aprilTags = getAprilTags().get();
-            if (isValidAprilTags(aprilTags)) {
+            TargetAprilTags validAprilTags = retrieveValidTargetTags(getAprilTags().get());
+            if (validAprilTags.isValid()) {
                 drivebase.zeroGyro();
-                double middle = (aprilTags[1].txnc + aprilTags[0].txnc) / 2;
+                double middle = validAprilTags.getTagMidpoint();
 
                 drivebase.drive(new Translation2d(0, 0), getRubberBandingSpeed(middle), false);
 
                 // check if robot is aligned
                 if (isApproximatelyEqual(middle, 0, 0.15)) {
                     currentAligningStage = 1;
+                    System.out.println("Aligning stage 1 reached!");
                 }
             } else {
                 drivebase.drive(new Translation2d(0, 0), 2, false);
             }
 
         } else {
-            RawFiducial[] aprilTags = getAprilTags().get();
+            TargetAprilTags validAprilTags = retrieveValidTargetTags(getAprilTags().get());
             final double targetDistance = 8.556558354542982;
-            final double driveSpeed = 0.1;
+            final double driveSpeed = 0.15;
 
-            double coordinateDistance = getCoordinateDistanceBetweenTags(aprilTags);
+            if (validAprilTags.isValid()) {
+                double coordinateDistance = validAprilTags.getTagDistance();
 
-            if (isApproximatelyEqual(coordinateDistance, targetDistance, 0.15)) {
-                currentAligningStage = 2;
-            } else if (coordinateDistance > targetDistance + 0.15) {
-                drivebase.drive(new Translation2d(driveSpeed * -1, 0), 0.0, false);
+                System.out.println(coordinateDistance);
+
+                if (isApproximatelyEqual(coordinateDistance, targetDistance, 0.15)) {
+                    System.out.println("Robot finished!");
+                    currentAligningStage = 2;
+                } else if (coordinateDistance > targetDistance + 0.15) {
+                    System.out.println("AprilTags too close! Moving backwards.");
+                    drivebase.drive(new Translation2d(driveSpeed * -1, 0), 0.0, false);
+                } else {
+                    System.out.println("AprilTags too far! Moving forwards.");
+                    drivebase.drive(new Translation2d(driveSpeed, 0), 0.0, false);
+                }
+                
             } else {
-                drivebase.drive(new Translation2d(driveSpeed, 0), 0.0, false);
+                System.out.println("Tags invalid! Moving backwards.");
+                drivebase.drive(new Translation2d(driveSpeed * -1, 0), 0.0, false);
             }
+            
         }
 
     }

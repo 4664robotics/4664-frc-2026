@@ -6,6 +6,10 @@ public class TargetAprilTags {
     RawFiducial leftTag = null;
     RawFiducial rightTag = null;
 
+    public TargetAprilTags() {
+        
+    }
+
     public RawFiducial getLeftTag() {
         return leftTag;
     }
@@ -24,5 +28,13 @@ public class TargetAprilTags {
 
     public boolean isValid() {
         return this.leftTag != null && this.rightTag != null;
+    }
+
+    public double getTagDistance() {
+        return Math.sqrt(Math.pow(rightTag.txnc - leftTag.txnc, 2) + Math.pow(rightTag.tync - leftTag.tync, 2));
+    }
+
+    public double getTagMidpoint() {
+        return (leftTag.txnc + rightTag.txnc) / 2;
     }
 }
