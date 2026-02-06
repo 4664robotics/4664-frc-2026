@@ -215,6 +215,8 @@ public class RobotContainer
 
       driverJoystick.button(3).onTrue(targetAutoAlign);
       driverJoystick.button(9).onTrue(Commands.runOnce(testSubsystem::printAprilTagData));
+      driverXbox.y().onTrue(targetAutoAlign);
+      driverXbox.x().onTrue(Commands.runOnce(testSubsystem::printAprilTagData));
     }
 
   }

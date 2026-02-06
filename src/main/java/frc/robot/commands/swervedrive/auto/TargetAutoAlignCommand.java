@@ -16,6 +16,10 @@ public class TargetAutoAlignCommand extends Command {
     public SwerveSubsystem drivebase;
     Limelight limelight = new Limelight("limelight-butler");
 
+    // current stage of aligning, with 0 being rotating, and 1 being moving back and forth
+    // when it equals 2, the robot completes alignment and stops moving
+    int currentAligningStage = 0; 
+
     // defines which april tags are on the left and the right to eliminate error
     int[] leftTagIds = {1};
     int[] rightTagIds = {2};
@@ -84,43 +88,50 @@ public class TargetAutoAlignCommand extends Command {
     }
 
     public double getRubberBandingSpeed(double distanceFromCenter) {
-        if (distanceFromCenter > 0.2 || distanceFromCenter < -0.2) {
+        if (distanceFromCenter > 0.15 || distanceFromCenter < -0.15) {
             
-            return clampCalc(distanceFromCenter * -0.15, -0.35, 0.35);
+            return clampCalc(distanceFromCenter * -0.15, -0.8, 0.8);
         } else {
             return 0.0;
         }
     }
 
-           /*  // CALCULATE DISTANCE THINGY
-            if (aprilTags.length == 2) {
+    // CALCULATE DISTANCE THINGY
+    public double getCoordinateDistanceBetweenTags(RawFiducial[] apriltags) {
 
-                RawFiducial leftTag = new RawFiducial(0, 0, 0, 0, 0, 0, 0);
-                RawFiducial rightTag = new RawFiducial(0, 0, 0, 0, 0, 0, 0);
+        RawFiducial leftTag = new RawFiducial(0, 0, 0, 0, 0, 0, 0);
+        RawFiducial rightTag = new RawFiducial(0, 0, 0, 0, 0, 0, 0);
 
 
 
-                double tagDistance = Math.sqrt(Math.pow(rightTag.txnc - leftTag.txnc, 2) + Math.pow(rightTag.tync - leftTag.tync, 2));
-                System.out.println("Tag coordinate distance: " + tagDistance);
-            }*/
+        return Math.sqrt(Math.pow(rightTag.txnc - leftTag.txnc, 2) + Math.pow(rightTag.tync - leftTag.tync, 2));
+    }
+
 
 
     @Override
     public void initialize() {
-
+        currentAligningStage = 0;
     }
 
+
+    // distance to reach: 8.556558354542982
     @Override
     public void execute() {
-        RawFiducial[] aprilTags = getAprilTags().get();
-        if (isValidAprilTags(aprilTags)) {
-            drivebase.zeroGyro();
-            double middle = (aprilTags[1].txnc + aprilTags[0].txnc) / 2;
+        if (currentAligningStage == 0) {
+            RawFiducial[] aprilTags = getAprilTags().get();
+            if (isValidAprilTags(aprilTags)) {
+                drivebase.zeroGyro();
+                double middle = (aprilTags[1].txnc + aprilTags[0].txnc) / 2;
 
-            drivebase.drive(new Translation2d(0, 0), getRubberBandingSpeed(middle), true);
+                drivebase.drive(new Translation2d(0, 0), getRubberBandingSpeed(middle), true);
+            } else {
+                drivebase.drive(new Translation2d(0, 0), 2, true);
+            }
         } else {
-            drivebase.drive(new Translation2d(0, 0), 1, true);
+
         }
+
     }
 
     @Override
