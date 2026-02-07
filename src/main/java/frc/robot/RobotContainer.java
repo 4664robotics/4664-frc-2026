@@ -28,7 +28,6 @@ import java.io.File;
 import swervelib.SwerveInputStream;
 
 import frc.robot.subsystems.TestSubsystem;
-import frc.robot.subsystems.ExampleSubsystem;
 
 import frc.robot.commands.swervedrive.auto.TargetAutoAlignCommand;
 
@@ -49,7 +48,6 @@ public class RobotContainer
 
   // OUR THINGIEIES
   TestSubsystem testSubsystem = new TestSubsystem();
-  ExampleSubsystem exampleSubsystem = new ExampleSubsystem();
 
 
 
@@ -203,15 +201,12 @@ public class RobotContainer
 
       driverJoystick.button(9).onTrue(Commands.runOnce(testSubsystem::printAprilTagData));
 
-      driverJoystick.button(8).onTrue(Commands.runOnce(exampleSubsystem::helloWorld));
-
     } else
     {
       driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
       driverXbox.start().whileTrue(Commands.none());
       driverXbox.back().whileTrue(Commands.none());
       driverXbox.leftBumper().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
-      driverXbox.rightBumper().onTrue(Commands.none());
 
       driverJoystick.button(3).onTrue(targetAutoAlign);
       driverJoystick.button(9).onTrue(Commands.runOnce(testSubsystem::printAprilTagData));

@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.units.CurrentUnit;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import limelight.Limelight;
@@ -21,14 +22,14 @@ public class TargetAutoAlignCommand extends Command {
     int[] leftTagIds = {1};
     int[] rightTagIds = {2};
 
-    final double targetDistance = 15.925449429385568; // the coordinate length value that the robot is trying to reach
-    final double targetDistanceError = 0.15; // the amount of error that's allowed when trying to reach the target distance value
+    final double targetDistance = 13.017346109940878; // the coordinate length value that the robot is trying to reach
+    final double targetDistanceError = 0.05; // the amount of error that's allowed when trying to reach the target distance value
     final double driveRubberBandingMultiplier = 1; // robot drive speed when rubberbanding
     final double correctionSpeed = 0.5; // the speed for the robot to drive backwards if it gets too close to the april tags
     
     final double seekingRotationSpeed = 1.5; // the speed the robot rotates at when searching for april tags
     final double rotationalRubberBandingMultiplier = 0.15; // rotational speed when rubberbanding
-    final double seekingError = 0.05; // the amount of error that's allowed when trying to align with the april tags
+    final double seekingError = 0.25; // the amount of error that's allowed when trying to align with the april tags
     
     // be careful with these ones
     final double driveSpeedLimit = 0.9; // used when rubberbanding driving (measured in m/s)
@@ -43,7 +44,9 @@ public class TargetAutoAlignCommand extends Command {
 
     // current stage of aligning, with 0 being rotating, and 1 being moving back and forth
     // when it equals 2, the robot completes alignment and stops moving
-    int currentAligningStage = 0; 
+    int currentAligningStage;
+    double lastRotation;
+    double degreesRotated;
 
 
 
@@ -91,6 +94,15 @@ public class TargetAutoAlignCommand extends Command {
         }
     }
 
+    // returns the robot's rotation in degrees, adjusted to always be position instead of negative
+    public double getAdjustedRotation(double rotation) {
+        if (rotation < 0.0) {
+            return rotation + 360.0;
+        }
+
+        return rotation;
+    }
+
     public TargetAprilTags retrieveValidTargetTags(RawFiducial[] aprilTags) {
         if (aprilTags.length != 2) {
             return new TargetAprilTags();
@@ -114,8 +126,8 @@ public class TargetAutoAlignCommand extends Command {
         }
     }
 
-    public double getRubberBandingSpeed(double distanceFromCenter, double multiplier, double limit) {
-        if (distanceFromCenter > seekingError || distanceFromCenter < seekingError * -1) {
+    public double getRubberBandingSpeed(double distanceFromCenter, double multiplier, double limit, double error) {
+        if (distanceFromCenter > error || distanceFromCenter < error * -1) {
             return clampCalc(distanceFromCenter * multiplier * -1, limit * -1, limit);
         } else {
             return 0.0;
@@ -125,26 +137,36 @@ public class TargetAutoAlignCommand extends Command {
     @Override
     public void initialize() {
         currentAligningStage = 0;
+        lastRotation = 0.0;
+        degreesRotated = 0.0;
     }
 
 
-    // distance to reach: 8.556558354542982
     @Override
     public void execute() {
         if (currentAligningStage == 0) {
             TargetAprilTags validAprilTags = retrieveValidTargetTags(getAprilTags().get());
             if (validAprilTags.isValid()) {
-                drivebase.zeroGyro();
                 double middle = validAprilTags.getTagMidpoint();
 
-                drivebase.drive(new Translation2d(0, 0), getRubberBandingSpeed(middle, rotationalRubberBandingMultiplier, rotationalSpeedLimit), false);
+                System.out.println("Robot out of alignment! Rotating...");
+                System.out.println(getRubberBandingSpeed(middle, rotationalRubberBandingMultiplier, rotationalSpeedLimit, seekingError));
+                drivebase.drive(new Translation2d(0, 0), getRubberBandingSpeed(middle, rotationalRubberBandingMultiplier, rotationalSpeedLimit, seekingError), false);
 
                 // check if robot is aligned
-                if (isApproximatelyEqual(middle, 0, 0.15)) {
+                if (isApproximatelyEqual(middle, 0.0, seekingError)) {
+                    drivebase.zeroGyro();
                     currentAligningStage = 1;
                 }
             } else {
-                drivebase.drive(new Translation2d(0, 0), seekingRotationSpeed, false);
+                degreesRotated += getAdjustedRotation(drivebase.getHeading().getDegrees()) - lastRotation;
+                if (degreesRotated > 357.0) {
+                    currentAligningStage = 2;
+                } else {
+                    lastRotation = getAdjustedRotation(drivebase.getHeading().getDegrees());
+                    drivebase.drive(new Translation2d(0, 0), seekingRotationSpeed, false);
+                }
+                System.out.println(degreesRotated);
             }
 
         } else {
@@ -158,14 +180,13 @@ public class TargetAutoAlignCommand extends Command {
 
                 if (isApproximatelyEqual(coordinateDistance, targetDistance, targetDistanceError)) {
                     currentAligningStage = 2;
-                } else if (coordinateDistance > targetDistance + targetDistanceError) {
-                    drivebase.drive(new Translation2d(getRubberBandingSpeed(coordinateDistance - targetDistance, driveRubberBandingMultiplier, driveSpeedLimit), 0), 0.0, false);
                 } else {
-                    drivebase.drive(new Translation2d(getRubberBandingSpeed(coordinateDistance - targetDistance, driveRubberBandingMultiplier, driveSpeedLimit), 0), 0.0, false);
+                    System.out.println("Robot out of alignment! Moving forwards/backwards...");
+                    drivebase.drive(new Translation2d(getRubberBandingSpeed(coordinateDistance - targetDistance, driveRubberBandingMultiplier, driveSpeedLimit, targetDistanceError), 0), 0.0, false);
                 }
                 
             } else {
-                drivebase.drive(new Translation2d(correctionSpeed * -1, 0), 0.0, false);
+
             }
             
         }
@@ -176,6 +197,7 @@ public class TargetAutoAlignCommand extends Command {
     public boolean isFinished() {
         if (currentAligningStage == 2) {
             System.out.println("Aligning complete!");
+            drivebase.lock();
             return true;
         }
         return false;
