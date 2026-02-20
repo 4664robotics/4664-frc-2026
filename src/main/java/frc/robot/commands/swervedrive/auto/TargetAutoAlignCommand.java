@@ -28,8 +28,8 @@ public class TargetAutoAlignCommand extends Command {
     final double correctionSpeed = 0.5; // the speed for the robot to drive backwards if it gets too close to the april tags
     
     final double seekingRotationSpeed = 1.5; // the speed the robot rotates at when searching for april tags
-    final double rotationalRubberBandingMultiplier = 0.15; // rotational speed when rubberbanding
-    final double seekingError = 0.25; // the amount of error that's allowed when trying to align with the april tags
+    final double rotationalRubberBandingMultiplier = 0.12; // rotational speed when rubberbanding
+    final double seekingError = 0.13; // the amount of error that's allowed when trying to align with the april tags
     
     // be careful with these ones
     final double driveSpeedLimit = 0.9; // used when rubberbanding driving (measured in m/s)
