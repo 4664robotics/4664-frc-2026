@@ -1,5 +1,6 @@
 package frc.robot.commands.swervedrive.auto;
 
+import java.lang.annotation.Target;
 import java.util.Optional;
 
 import edu.wpi.first.math.geometry.Pose3d;
@@ -16,13 +17,16 @@ public class TargetAutoAlignCommand extends Command {
     public SwerveSubsystem drivebase;
     Limelight limelight = new Limelight("limelight-butler");
 
+    int[] validTags = {2};
+    TargetAprilTags targetAprilTags = new TargetAprilTags(validTags);
+
     // == AUTO-ALIGNMENT CONFIGURATION ==
 
     // defines which april tags are "left" and "right" april tags so the robot always knows what it's looking for
     int[] leftTagIds = {1};
     int[] rightTagIds = {2};
 
-    final double targetDistance = 13.017346109940878; // the coordinate length value that the robot is trying to reach
+    final double targetDistanceInches = 25; // the distance from the tag in inches that the robot is trying to reach
     final double targetDistanceError = 0.05; // the amount of error that's allowed when trying to reach the target distance value
     final double driveRubberBandingMultiplier = 1; // robot drive speed when rubberbanding
     final double correctionSpeed = 0.5; // the speed for the robot to drive backwards if it gets too close to the april tags
@@ -54,27 +58,6 @@ public class TargetAutoAlignCommand extends Command {
         drivebase = swerveSubsystem;
     }
 
-    public boolean intArrayContainsValue(int[] array, int value) {
-        for (int i = 0; i < array.length; i++) {
-            if (array[i] == value) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public Optional<RawFiducial[]> getAprilTags() {
-        limelight.getSettings().withCameraOffset(Pose3d.kZero);
-        LimelightData scanData = limelight.getData();
-
-        if (scanData != null) {
-            return Optional.ofNullable(scanData.getRawFiducials()); // get array of april tags
-        }
-
-        return null;
-    }
-
     // error = the allowed error in precision when deciding if value2 is "approximately" equal to value1
     public boolean isApproximatelyEqual(double value1, double value2, double error) {
         if (value1 >= value2 - Math.abs(error) && value1 <= value2 + Math.abs(error)) {
@@ -103,29 +86,6 @@ public class TargetAutoAlignCommand extends Command {
         return rotation;
     }
 
-    public TargetAprilTags retrieveValidTargetTags(RawFiducial[] aprilTags) {
-        if (aprilTags.length != 2) {
-            return new TargetAprilTags();
-        }
-
-        TargetAprilTags tags = new TargetAprilTags();
-        for (int i = 0; i < 2; i++) {
-            if (intArrayContainsValue(leftTagIds, aprilTags[i].id)) {
-                tags.setLeftTag(aprilTags[i]);
-            }
-
-            if (intArrayContainsValue(rightTagIds, aprilTags[i].id)) {
-                tags.setRightTag(aprilTags[i]);
-            }
-        }
-
-        if (tags.isValid()) {
-            return tags;
-        } else {
-            return null;
-        }
-    }
-
     public double getRubberBandingSpeed(double distanceFromCenter, double multiplier, double limit, double error) {
         if (distanceFromCenter > error || distanceFromCenter < error * -1) {
             return clampCalc(distanceFromCenter * multiplier * -1, limit * -1, limit);
@@ -145,16 +105,15 @@ public class TargetAutoAlignCommand extends Command {
     @Override
     public void execute() {
         if (currentAligningStage == 0) {
-            TargetAprilTags validAprilTags = retrieveValidTargetTags(getAprilTags().get());
-            if (validAprilTags.isValid()) {
-                double middle = validAprilTags.getTagMidpoint();
+            RawFiducial[] validAprilTags = targetAprilTags.retrieveValidTags();
 
+            if (validAprilTags.length > 0) {
                 System.out.println("Robot out of alignment! Rotating...");
-                System.out.println(getRubberBandingSpeed(middle, rotationalRubberBandingMultiplier, rotationalSpeedLimit, seekingError));
-                drivebase.drive(new Translation2d(0, 0), getRubberBandingSpeed(middle, rotationalRubberBandingMultiplier, rotationalSpeedLimit, seekingError), false);
+                System.out.println(getRubberBandingSpeed(validAprilTags[0].txnc, rotationalRubberBandingMultiplier, rotationalSpeedLimit, seekingError));
+                drivebase.drive(new Translation2d(0, 0), getRubberBandingSpeed(validAprilTags[0].txnc, rotationalRubberBandingMultiplier, rotationalSpeedLimit, seekingError), false);
 
                 // check if robot is aligned
-                if (isApproximatelyEqual(middle, 0.0, seekingError)) {
+                if (isApproximatelyEqual(validAprilTags[0].txnc, 0.0, seekingError)) {
                     drivebase.zeroGyro();
                     currentAligningStage = 1;
                 }
@@ -170,19 +129,18 @@ public class TargetAutoAlignCommand extends Command {
             }
 
         } else {
-            TargetAprilTags validAprilTags = retrieveValidTargetTags(getAprilTags().get());
+            RawFiducial[] validAprilTags = targetAprilTags.retrieveValidTags();
 
+            if (validAprilTags.length > 0) {
+                double tagDistance = targetAprilTags.getDistanceFromTagMeters(validAprilTags[0]);
 
-            if (validAprilTags.isValid()) {
-                double coordinateDistance = validAprilTags.getTagDistance();
+                System.out.println(tagDistance);
 
-                System.out.println(coordinateDistance);
-
-                if (isApproximatelyEqual(coordinateDistance, targetDistance, targetDistanceError)) {
+                if (isApproximatelyEqual(tagDistance, targetDistanceInches, targetDistanceError)) {
                     currentAligningStage = 2;
                 } else {
                     System.out.println("Robot out of alignment! Moving forwards/backwards...");
-                    drivebase.drive(new Translation2d(getRubberBandingSpeed(coordinateDistance - targetDistance, driveRubberBandingMultiplier, driveSpeedLimit, targetDistanceError), 0), 0.0, false);
+                    drivebase.drive(new Translation2d(getRubberBandingSpeed(tagDistance - targetDistanceInches, driveRubberBandingMultiplier, driveSpeedLimit, targetDistanceError), 0), 0.0, false);
                 }
                 
             } else {

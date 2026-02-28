@@ -1,40 +1,55 @@
 package frc.robot.commands.swervedrive.auto;
 
+import limelight.Limelight;
 import limelight.results.RawFiducial;
 
+import java.util.ArrayList;
+
+import edu.wpi.first.math.geometry.Pose3d;
+
 public class TargetAprilTags {
-    RawFiducial leftTag = null;
-    RawFiducial rightTag = null;
+    int[] validTags;
 
-    public TargetAprilTags() {
-        
+    Limelight limelight = new Limelight("limelight-butler");
+
+    final double LIMELIGHT_MOUNT_ANGLE_DEGREES = 0;
+    final double LIMELIGHT_LENS_HEIGHT_INCHES = 0;
+    final double GOAL_HEIGHT_INCHES = 0;
+
+
+    public TargetAprilTags(int[] validTags) {
+        this.validTags = validTags;
     }
 
-    public RawFiducial getLeftTag() {
-        return leftTag;
+    // returns an array containing the valid tags listed in the valid tags array
+    public RawFiducial[] retrieveValidTags() {
+        ArrayList<RawFiducial> foundTags = new ArrayList<RawFiducial>();
+
+        // zero limelight position and get data from scan
+        limelight.getSettings().withCameraOffset(Pose3d.kZero);
+        RawFiducial[] scanData = limelight.getData().getRawFiducials();
+
+        for (int i = 0; i < scanData.length; i++) {
+            for (int j = 0; j < validTags.length; j++) {
+                if (scanData[i].id == validTags[i]) {
+                    foundTags.add(scanData[i]);
+                }
+            }
+        }
+
+        RawFiducial[] foundTagsArray = {};
+
+        for (int i = 0; i < foundTags.size(); i++) {
+            foundTagsArray[i] = foundTags.get(i);
+        }
+
+        return foundTagsArray;
     }
 
-    public void setLeftTag(RawFiducial leftTag) {
-        this.leftTag = leftTag;
-    }
+    public double getDistanceFromTagMeters(RawFiducial tag) {
+        double angleToGoalDegrees = LIMELIGHT_MOUNT_ANGLE_DEGREES + tag.tync;
+        double angleToGoalRadians = angleToGoalDegrees * (Math.PI / 180);
 
-    public RawFiducial getRightTag() {
-        return rightTag;
-    }
-
-    public void setRightTag(RawFiducial rightTag) {
-        this.rightTag = rightTag;
-    }
-
-    public boolean isValid() {
-        return this.leftTag != null && this.rightTag != null;
-    }
-
-    public double getTagDistance() {
-        return Math.sqrt(Math.pow(rightTag.txnc - leftTag.txnc, 2) + Math.pow(rightTag.tync - leftTag.tync, 2));
-    }
-
-    public double getTagMidpoint() {
-        return (leftTag.txnc + rightTag.txnc) / 2;
+        return (GOAL_HEIGHT_INCHES - LIMELIGHT_LENS_HEIGHT_INCHES) / Math.tan(angleToGoalRadians);
     }
 }

@@ -24,11 +24,14 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
+import limelight.Limelight;
+import limelight.results.RawFiducial;
+
 import java.io.File;
 import swervelib.SwerveInputStream;
 
 import frc.robot.subsystems.TestSubsystem;
-
+import frc.robot.commands.swervedrive.auto.TargetAprilTags;
 import frc.robot.commands.swervedrive.auto.TargetAutoAlignCommand;
 
 /**
@@ -50,7 +53,9 @@ public class RobotContainer
   TestSubsystem testSubsystem = new TestSubsystem();
 
 
-
+  // APRIL TAGS THAT ARE VALID TO SCAN ON THE FIELD
+  int[] validTags = {2};
+  TargetAprilTags targetAprilTags = new TargetAprilTags(validTags);
 
 
   // Establish a Sendable Chooser that will be able to be sent to the SmartDashboard, allowing selection of desired auto
@@ -223,8 +228,16 @@ public class RobotContainer
    */
   public Command getAutonomousCommand()
   {
-    // Pass in the selected auto from the SmartDashboard as our desired autnomous commmand 
-    return autoChooser.getSelected();
+    RawFiducial[] validTags = targetAprilTags.retrieveValidTags();
+
+    if (validTags.length == 0) { // if no tags detected, return nothing
+      System.out.println("No AprilTags found!");
+      return Commands.none();
+    }
+
+
+
+
   }
 
   public void setMotorBrake(boolean brake)
