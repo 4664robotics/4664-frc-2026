@@ -22,10 +22,6 @@ public class TargetAutoAlignCommand extends Command {
 
     // == AUTO-ALIGNMENT CONFIGURATION ==
 
-    // defines which april tags are "left" and "right" april tags so the robot always knows what it's looking for
-    int[] leftTagIds = {1};
-    int[] rightTagIds = {2};
-
     final double targetDistanceInches = 25; // the distance from the tag in inches that the robot is trying to reach
     final double targetDistanceError = 0.05; // the amount of error that's allowed when trying to reach the target distance value
     final double driveRubberBandingMultiplier = 1; // robot drive speed when rubberbanding

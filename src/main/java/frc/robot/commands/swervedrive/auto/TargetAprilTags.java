@@ -1,10 +1,12 @@
 package frc.robot.commands.swervedrive.auto;
 
 import limelight.Limelight;
+import limelight.networktables.LimelightPoseEstimator;
 import limelight.results.RawFiducial;
 
 import java.util.ArrayList;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 
 public class TargetAprilTags {
@@ -51,5 +53,9 @@ public class TargetAprilTags {
         double angleToGoalRadians = angleToGoalDegrees * (Math.PI / 180);
 
         return (GOAL_HEIGHT_INCHES - LIMELIGHT_LENS_HEIGHT_INCHES) / Math.tan(angleToGoalRadians);
+    }
+
+    public Pose2d getCurrentPose() {
+        return limelight.getLatestResults().get().getBotPose2d();
     }
 }

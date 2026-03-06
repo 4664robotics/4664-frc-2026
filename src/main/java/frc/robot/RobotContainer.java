@@ -6,6 +6,8 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.path.PathPlannerPath;
+
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -24,13 +26,10 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
-import limelight.Limelight;
-import limelight.results.RawFiducial;
 
 import java.io.File;
 import swervelib.SwerveInputStream;
 
-import frc.robot.subsystems.TestSubsystem;
 import frc.robot.commands.swervedrive.auto.TargetAprilTags;
 import frc.robot.commands.swervedrive.auto.TargetAutoAlignCommand;
 
@@ -50,12 +49,15 @@ public class RobotContainer
                                                                                 "swerve/neo"));
 
   // OUR THINGIEIES
-  TestSubsystem testSubsystem = new TestSubsystem();
 
 
   // APRIL TAGS THAT ARE VALID TO SCAN ON THE FIELD
   int[] validTags = {2};
   TargetAprilTags targetAprilTags = new TargetAprilTags(validTags);
+
+
+
+
 
 
   // Establish a Sendable Chooser that will be able to be sent to the SmartDashboard, allowing selection of desired auto
@@ -199,24 +201,17 @@ public class RobotContainer
     {
       drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity); // Overrides drive command above!
 
-      driverXbox.a().onTrue(Commands.runOnce(testSubsystem::turnOnLight));
-      driverXbox.b().onTrue(Commands.runOnce(testSubsystem::turnOffLight));
-
       //driverXbox.x().onTrue(Commands.runOnce(testSubsystem::printAprilTagData));
-
-      driverJoystick.button(9).onTrue(Commands.runOnce(testSubsystem::printAprilTagData));
 
     } else
     {
       driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
       driverXbox.start().whileTrue(Commands.none());
       driverXbox.back().whileTrue(Commands.none());
-      driverXbox.leftBumper().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
+      //driverXbox.leftBumper().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
 
       driverJoystick.button(3).onTrue(targetAutoAlign);
-      driverJoystick.button(9).onTrue(Commands.runOnce(testSubsystem::printAprilTagData));
       driverXbox.y().onTrue(targetAutoAlign);
-      driverXbox.x().onTrue(Commands.runOnce(testSubsystem::printAprilTagData));
     }
 
   }
@@ -226,22 +221,26 @@ public class RobotContainer
    *
    * @return the command to run in autonomous
    */
-  public Command getAutonomousCommand()
+  public Command getAutonomousCommand() // 6.883 MOI
   {
-    RawFiducial[] validTags = targetAprilTags.retrieveValidTags();
+    try{
+        // Load the path you want to follow using its name in the GUI
+        PathPlannerPath path = PathPlannerPath.fromPathFile("TestPath");
 
-    if (validTags.length == 0) { // if no tags detected, return nothing
-      System.out.println("No AprilTags found!");
-      return Commands.none();
-    }
-
-
-
-
+        // Create a path following command using AutoBuilder. This will also trigger event markers.
+        return AutoBuilder.followPath(path);
+    } catch (Exception e) {
+        DriverStation.reportError("Big oops: " + e.getMessage(), e.getStackTrace());
+        return Commands.none(); }
   }
 
   public void setMotorBrake(boolean brake)
   {
     drivebase.setMotorBrake(brake);
+  }
+
+
+  public void resetRobotOdometry() {
+    drivebase.resetOdometry(targetAprilTags.getCurrentPose());
   }
 }
