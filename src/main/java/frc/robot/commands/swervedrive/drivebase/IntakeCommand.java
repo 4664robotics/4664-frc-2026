@@ -1,13 +1,15 @@
 package frc.robot.commands.swervedrive.drivebase;
 
 import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj2.command.Command;
 
 public class IntakeCommand extends Command {
+    SparkMax intake;
 
-    SparkMax smg = new SparkMax(0, MotorType.kBrushless);
+    public IntakeCommand(SparkMax intake) {
+        this.intake = intake;
+    }
 
     @Override
     public void initialize(){
@@ -16,12 +18,12 @@ public class IntakeCommand extends Command {
 
     @Override
     public void execute(){
-        smg.set(0.1);
+        intake.set(0.1);
     }
 
     @Override
     public void end(boolean interrupted){
-        smg.set(0);
+        intake.set(0);
     }
 
     @Override

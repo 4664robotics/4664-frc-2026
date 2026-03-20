@@ -7,6 +7,8 @@ package frc.robot;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.path.PathPlannerPath;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkMax;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -29,9 +31,10 @@ import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 
 import java.io.File;
 import swervelib.SwerveInputStream;
-
 import frc.robot.commands.swervedrive.auto.TargetAprilTags;
 import frc.robot.commands.swervedrive.auto.TargetAutoAlignCommand;
+import frc.robot.commands.swervedrive.drivebase.IntakeCommand;
+import frc.robot.commands.swervedrive.drivebase.ShooterCommand;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a "declarative" paradigm, very
@@ -54,6 +57,16 @@ public class RobotContainer
   // APRIL TAGS THAT ARE VALID TO SCAN ON THE FIELD
   int[] validTags = {2};
   TargetAprilTags targetAprilTags = new TargetAprilTags(validTags);
+
+
+
+  // commands and motor controllers
+  SparkMax ammoGuide = new SparkMax(0, MotorType.kBrushless);
+  SparkMax firingWheels = new SparkMax(0, MotorType.kBrushless);
+  SparkMax intake = new SparkMax(0, MotorType.kBrushless);
+
+  ShooterCommand shooterCommand = new ShooterCommand(ammoGuide, firingWheels);
+  IntakeCommand intakeCommand = new IntakeCommand(intake);
 
 
 
@@ -223,15 +236,7 @@ public class RobotContainer
    */
   public Command getAutonomousCommand() // 6.883 MOI
   {
-    try{
-        // Load the path you want to follow using its name in the GUI
-        PathPlannerPath path = PathPlannerPath.fromPathFile("TestPath");
-
-        // Create a path following command using AutoBuilder. This will also trigger event markers.
-        return AutoBuilder.followPath(path);
-    } catch (Exception e) {
-        DriverStation.reportError("Big oops: " + e.getMessage(), e.getStackTrace());
-        return Commands.none(); }
+    return shooterCommand;
   }
 
   public void setMotorBrake(boolean brake)

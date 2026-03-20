@@ -1,13 +1,18 @@
 package frc.robot.commands.swervedrive.drivebase;
 
 import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj2.command.Command;
 
-public class ShooterCommand extends Command {
 
-    SparkMax smg = new SparkMax(0, MotorType.kBrushless);
+public class ShooterCommand extends Command {
+    SparkMax ammoGuide;
+    SparkMax firingWheels;
+
+    public ShooterCommand(SparkMax ammoGuide, SparkMax firingWheels) {
+        this.ammoGuide = ammoGuide;
+        this.firingWheels = firingWheels; 
+    }
 
     @Override
     public void initialize(){
@@ -16,12 +21,14 @@ public class ShooterCommand extends Command {
 
     @Override
     public void execute(){
-        smg.set(0.1);
+        ammoGuide.set(0.1);
+        firingWheels.set(0.1);
     }
 
     @Override
     public void end(boolean interrupted){
-        smg.set(0);
+        ammoGuide.set(0);
+        firingWheels.set(0);
     }
 
     @Override
