@@ -67,7 +67,7 @@ public class RobotContainer
   SparkMax intakePull = new SparkMax(0, MotorType.kBrushless);
 
   ShooterCommand shooterCommand = new ShooterCommand(ammoGuide, firingWheels);
-  IntakeSpinCommand intakeCommand = new IntakeSpinCommand(intakeSpin);
+  IntakeSpinCommand intakeSpinCommand = new IntakeSpinCommand(intakeSpin);
   IntakePullCommand intakePullCommand = new IntakePullCommand(intakePull);
 
 
