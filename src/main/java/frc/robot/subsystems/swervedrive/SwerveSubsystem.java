@@ -32,6 +32,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import frc.robot.Constants;
+import frc.robot.commands.swervedrive.auto.TargetAprilTags;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -55,6 +57,8 @@ public class SwerveSubsystem extends SubsystemBase
    * Swerve drive object.
    */
   private final SwerveDrive swerveDrive;
+
+  private TargetAprilTags targetAprilTags = new TargetAprilTags();
 
   /**
    * Initialize {@link SwerveDrive} with the directory provided.
@@ -111,6 +115,11 @@ public class SwerveSubsystem extends SubsystemBase
   @Override
   public void periodic()
   {
+    if (targetAprilTags.retrieveValidTags().length != 0) { // if tags found
+      swerveDrive.addVisionMeasurement(targetAprilTags.getCurrentPoseEstimateFromVision(), Timer.getFPGATimestamp());
+    }
+
+    swerveDrive.updateOdometry();
   }
 
   @Override

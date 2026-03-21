@@ -20,6 +20,10 @@ public class TargetAprilTags {
     final double GOAL_HEIGHT_INCHES = 0;
 
 
+    public TargetAprilTags() {
+        validTags = new int[0];
+    }
+
     public TargetAprilTags(int[] validTags) {
         this.validTags = validTags;
     }
