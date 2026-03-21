@@ -236,16 +236,13 @@ public class RobotContainer
    */
   public Command getAutonomousCommand() // 6.883 MOI
   {
-    return shooterCommand;
+    drivebase.resetOdometry(targetAprilTags.getCurrentPoseEstimateFromVision()); // reset robot odometry to field position
+
+    return autoChooser.getSelected(); // run auto command
   }
 
   public void setMotorBrake(boolean brake)
   {
     drivebase.setMotorBrake(brake);
-  }
-
-
-  public void resetRobotOdometry() {
-    drivebase.resetOdometry(targetAprilTags.getCurrentPose());
   }
 }
