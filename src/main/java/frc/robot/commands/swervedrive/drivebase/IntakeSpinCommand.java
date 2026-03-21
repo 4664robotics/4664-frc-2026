@@ -4,11 +4,11 @@ import com.revrobotics.spark.SparkMax;
 
 import edu.wpi.first.wpilibj2.command.Command;
 
-public class IntakeCommand extends Command {
-    SparkMax intake;
+public class IntakeSpinCommand extends Command {
+    SparkMax intakeSpin;
 
-    public IntakeCommand(SparkMax intake) {
-        this.intake = intake;
+    public IntakeSpinCommand(SparkMax intakeSpin) {
+        this.intakeSpin = intakeSpin;
     }
 
     @Override
@@ -18,12 +18,12 @@ public class IntakeCommand extends Command {
 
     @Override
     public void execute(){
-        intake.set(0.1);
+        intakeSpin.set(0.1);
     }
 
     @Override
     public void end(boolean interrupted){
-        intake.set(0);
+        intakeSpin.set(0);
     }
 
     @Override

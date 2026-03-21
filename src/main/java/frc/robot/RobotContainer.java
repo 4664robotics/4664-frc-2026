@@ -6,7 +6,6 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-import com.pathplanner.lib.path.PathPlannerPath;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 
@@ -33,7 +32,8 @@ import java.io.File;
 import swervelib.SwerveInputStream;
 import frc.robot.commands.swervedrive.auto.TargetAprilTags;
 import frc.robot.commands.swervedrive.auto.TargetAutoAlignCommand;
-import frc.robot.commands.swervedrive.drivebase.IntakeCommand;
+import frc.robot.commands.swervedrive.drivebase.IntakePullCommand;
+import frc.robot.commands.swervedrive.drivebase.IntakeSpinCommand;
 import frc.robot.commands.swervedrive.drivebase.ShooterCommand;
 
 /**
@@ -60,13 +60,15 @@ public class RobotContainer
 
 
 
-  // commands and motor controllers
+  // commands and motor controllers (motor controllers are passed in here to keep code clean)
   SparkMax ammoGuide = new SparkMax(0, MotorType.kBrushless);
   SparkMax firingWheels = new SparkMax(0, MotorType.kBrushless);
-  SparkMax intake = new SparkMax(0, MotorType.kBrushless);
+  SparkMax intakeSpin = new SparkMax(0, MotorType.kBrushless);
+  SparkMax intakePull = new SparkMax(0, MotorType.kBrushless);
 
   ShooterCommand shooterCommand = new ShooterCommand(ammoGuide, firingWheels);
-  IntakeCommand intakeCommand = new IntakeCommand(intake);
+  IntakeSpinCommand intakeCommand = new IntakeSpinCommand(intakeSpin);
+  IntakePullCommand intakePullCommand = new IntakePullCommand(intakePull);
 
 
 
