@@ -4,10 +4,10 @@ import com.revrobotics.spark.SparkMax;
 
 import edu.wpi.first.wpilibj2.command.Command;
 
-public class IntakeSpinCommand extends Command {
+public class IntakeSpinClockwiseCommand extends Command {
     SparkMax intakeSpin;
 
-    public IntakeSpinCommand(SparkMax intakeSpin) {
+    public IntakeSpinClockwiseCommand(SparkMax intakeSpin) {
         this.intakeSpin = intakeSpin;
     }
 
