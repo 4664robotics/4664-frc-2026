@@ -36,11 +36,18 @@ public class TargetAprilTags {
         limelight.getSettings().withCameraOffset(Pose3d.kZero);
         RawFiducial[] scanData = limelight.getData().getRawFiducials();
 
-        for (int i = 0; i < scanData.length; i++) {
-            for (int j = 0; j < validTags.length; j++) {
-                if (scanData[i].id == validTags[i]) {
-                    foundTags.add(scanData[i]);
+        if (validTags.length != 0) {
+            for (int i = 0; i < scanData.length; i++) {
+                for (int j = 0; j < validTags.length; j++) {
+                    if (scanData[i].id == validTags[i]) {
+                        foundTags.add(scanData[i]);
+                    }
                 }
+            }
+        }
+        else { // if array of apriltag ids is empty, don't do any filtering
+            for (int i = 0; i < scanData.length; i++) {
+                foundTags.add(scanData[i]);
             }
         }
 

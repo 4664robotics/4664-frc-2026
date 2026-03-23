@@ -15,6 +15,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -55,22 +56,9 @@ public class RobotContainer
   // OUR THINGIEIES
 
 
-  // APRIL TAGS THAT ARE VALID TO SCAN ON THE FIELD
-  int[] validTags = {2};
-  TargetAprilTags targetAprilTags = new TargetAprilTags(validTags);
-
-
-
-  // commands and motor controllers (motor controllers are passed in here to keep code clean)
-  SparkMax ammoGuide = new SparkMax(0, MotorType.kBrushless);
-  SparkMax firingWheels = new SparkMax(0, MotorType.kBrushless);
-  SparkMax intakeSpin = new SparkMax(0, MotorType.kBrushless);
-  SparkMax intakePull = new SparkMax(0, MotorType.kBrushless);
-
-  ShooterCommand shooterCommand = new ShooterCommand(ammoGuide, firingWheels);
-  IntakeSpinClockwiseCommand intakeSpinClockwiseCommand = new IntakeSpinClockwiseCommand(intakeSpin);
-  IntakeSpinCounterclockwiseCommand intakeSpinCounterclockwiseCommand = new IntakeSpinCounterclockwiseCommand(intakeSpin);
-  IntakePullCommand intakePullCommand = new IntakePullCommand(intakePull);
+  
+  int[] validTags = {2}; // APRIL TAGS THAT ARE VALID TO SCAN ON THE FIELD
+  TargetAprilTags targetAprilTags = new TargetAprilTags(); // helper class for detecting april tags
 
 
 
@@ -179,6 +167,21 @@ public class RobotContainer
 
     Command targetAutoAlign = new TargetAutoAlignCommand(drivebase);
 
+
+
+    // commands and motor controllers (motor controllers are passed in here to keep code clean)
+    SparkMax ammoGuide = new SparkMax(0, MotorType.kBrushless);
+    SparkMax firingWheels = new SparkMax(0, MotorType.kBrushless);
+    SparkMax intakeSpin = new SparkMax(0, MotorType.kBrushless);
+    SparkMax intakePull = new SparkMax(0, MotorType.kBrushless);
+    DigitalInput intakeLimitSwitch = new DigitalInput(0);
+
+    ShooterCommand shooterCommand = new ShooterCommand(ammoGuide, firingWheels);
+    IntakeSpinClockwiseCommand intakeSpinClockwiseCommand = new IntakeSpinClockwiseCommand(intakeSpin, intakeLimitSwitch);
+    IntakeSpinCounterclockwiseCommand intakeSpinCounterclockwiseCommand = new IntakeSpinCounterclockwiseCommand(intakeSpin);
+    IntakePullCommand intakePullCommand = new IntakePullCommand(intakePull);
+
+
     if (RobotBase.isSimulation())
     {
       drivebase.setDefaultCommand(driveFieldOrientedDirectAngleKeyboard);
@@ -240,8 +243,6 @@ public class RobotContainer
    */
   public Command getAutonomousCommand() // 6.883 MOI
   {
-    drivebase.resetOdometry(targetAprilTags.getCurrentPoseEstimateFromVision()); // reset robot odometry to field position
-
     return autoChooser.getSelected(); // run auto command
   }
 

@@ -1,15 +1,9 @@
 package frc.robot.commands.swervedrive.auto;
 
-import java.lang.annotation.Target;
-import java.util.Optional;
-
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.units.CurrentUnit;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import limelight.Limelight;
-import limelight.networktables.LimelightData;
 import limelight.results.RawFiducial;
 
 

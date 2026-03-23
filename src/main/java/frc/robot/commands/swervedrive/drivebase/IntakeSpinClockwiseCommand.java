@@ -2,13 +2,16 @@ package frc.robot.commands.swervedrive.drivebase;
 
 import com.revrobotics.spark.SparkMax;
 
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.Command;
 
 public class IntakeSpinClockwiseCommand extends Command {
     SparkMax intakeSpin;
+    DigitalInput limitSwitch;
 
-    public IntakeSpinClockwiseCommand(SparkMax intakeSpin) {
+    public IntakeSpinClockwiseCommand(SparkMax intakeSpin, DigitalInput limitSwitch) {
         this.intakeSpin = intakeSpin;
+        this.limitSwitch = limitSwitch;
     }
 
     @Override
@@ -18,7 +21,9 @@ public class IntakeSpinClockwiseCommand extends Command {
 
     @Override
     public void execute(){
-        intakeSpin.set(0.1);
+        if (!limitSwitch.get()) {
+            intakeSpin.set(0.1);
+        }
     }
 
     @Override
