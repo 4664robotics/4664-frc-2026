@@ -31,8 +31,6 @@ import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 
 import java.io.File;
 import swervelib.SwerveInputStream;
-import frc.robot.commands.swervedrive.auto.TargetAprilTags;
-import frc.robot.commands.swervedrive.auto.TargetAutoAlignCommand;
 import frc.robot.commands.swervedrive.drivebase.IntakePullCommand;
 import frc.robot.commands.swervedrive.drivebase.IntakeSpinClockwiseCommand;
 import frc.robot.commands.swervedrive.drivebase.IntakeSpinCounterclockwiseCommand;
@@ -58,7 +56,6 @@ public class RobotContainer
 
   
   int[] validTags = {2}; // APRIL TAGS THAT ARE VALID TO SCAN ON THE FIELD
-  TargetAprilTags targetAprilTags = new TargetAprilTags(); // helper class for detecting april tags
 
 
 
@@ -165,8 +162,6 @@ public class RobotContainer
     Command driveSetpointGenKeyboard = drivebase.driveWithSetpointGeneratorFieldRelative(
         driveDirectAngleKeyboard);
 
-    Command targetAutoAlign = new TargetAutoAlignCommand(drivebase);
-
 
 
     // commands and motor controllers (motor controllers are passed in here to keep code clean)
@@ -229,9 +224,6 @@ public class RobotContainer
       driverXbox.start().whileTrue(Commands.none());
       driverXbox.back().whileTrue(Commands.none());
       //driverXbox.leftBumper().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
-
-      driverJoystick.button(3).onTrue(targetAutoAlign);
-      driverXbox.y().onTrue(targetAutoAlign);
     }
 
   }

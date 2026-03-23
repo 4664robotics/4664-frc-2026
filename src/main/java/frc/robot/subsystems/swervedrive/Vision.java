@@ -28,6 +28,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
+import org.photonvision.EstimatedRobotPose;
+import org.photonvision.PhotonCamera;
+import org.photonvision.PhotonPoseEstimator;
+import org.photonvision.PhotonPoseEstimator.PoseStrategy;
+import org.photonvision.PhotonUtils;
+import org.photonvision.simulation.PhotonCameraSim;
+import org.photonvision.simulation.SimCameraProperties;
+import org.photonvision.simulation.VisionSystemSim;
+import org.photonvision.targeting.PhotonPipelineResult;
+import org.photonvision.targeting.PhotonTrackedTarget;
 import swervelib.SwerveDrive;
 import swervelib.telemetry.SwerveDriveTelemetry;
 
@@ -48,6 +58,10 @@ public class Vision
    * Ambiguity defined as a value between (0,1). Used in {@link Vision#filterPose}.
    */
   private final       double              maximumAmbiguity                = 0.25;
+  /**
+   * Photon Vision Simulation
+   */
+  public              VisionSystemSim     visionSim;
   /**
    * Count of times that the odom thinks we're more than 10meters away from the april tag.
    */
