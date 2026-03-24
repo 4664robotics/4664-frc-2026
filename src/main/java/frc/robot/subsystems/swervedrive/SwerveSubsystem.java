@@ -37,9 +37,12 @@ import frc.robot.commands.swervedrive.auto.TargetAprilTags;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
+
+import edu.wpi.first.math.geometry.Pose2d;
 import org.json.simple.parser.ParseException;
 import swervelib.SwerveController;
 import swervelib.SwerveDrive;
@@ -115,11 +118,12 @@ public class SwerveSubsystem extends SubsystemBase
   @Override
   public void periodic()
   {
-    if (targetAprilTags.retrieveValidTags().length != 0) { // if tags found
-      swerveDrive.addVisionMeasurement(targetAprilTags.getCurrentPoseEstimateFromVision(), Timer.getFPGATimestamp());
-    }
-
     swerveDrive.updateOdometry();
+
+    Optional<Pose2d> visionPose = targetAprilTags.getCurrentPoseEstimateFromVision();
+    if (visionPose.isPresent()) {
+      swerveDrive.addVisionMeasurement(visionPose.get(), Timer.getFPGATimestamp());
+    }
   }
 
   @Override

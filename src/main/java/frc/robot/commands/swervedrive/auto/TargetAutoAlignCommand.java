@@ -149,16 +149,14 @@ public class TargetAutoAlignCommand extends Command {
 
     @Override
     public boolean isFinished() {
-        if (currentAligningStage == 2) {
-            System.out.println("Aligning complete!");
-            drivebase.lock();
-            return true;
-        }
-        return false;
+        return currentAligningStage == 2;
     }
 
-@Override
-public void end(boolean interrupted) {
-
-}
+    @Override
+    public void end(boolean interrupted) {
+        if (!interrupted) {
+            System.out.println("Aligning complete!");
+            drivebase.lock();
+        }
+    }
 }

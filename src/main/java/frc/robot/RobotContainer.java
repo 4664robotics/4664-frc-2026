@@ -8,6 +8,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
+import java.util.Optional;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -240,7 +241,11 @@ public class RobotContainer
    */
   public Command getAutonomousCommand() // 6.883 MOI
   {
-    drivebase.resetOdometry(targetAprilTags.getCurrentPoseEstimateFromVision()); // reset robot odometry to field position
+    // Only reset odometry from vision if Limelight has a valid pose estimate
+    Optional<edu.wpi.first.math.geometry.Pose2d> visionPose = targetAprilTags.getCurrentPoseEstimateFromVision();
+    if (visionPose.isPresent()) {
+      drivebase.resetOdometry(visionPose.get());
+    }
 
     return autoChooser.getSelected(); // run auto command
   }
