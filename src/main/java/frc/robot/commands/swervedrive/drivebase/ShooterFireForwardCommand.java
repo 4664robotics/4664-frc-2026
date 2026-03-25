@@ -4,11 +4,14 @@ import com.revrobotics.spark.SparkMax;
 
 import edu.wpi.first.wpilibj2.command.Command;
 
-public class IntakePullCommand extends Command {
-    SparkMax intakePull;
 
-    public IntakePullCommand(SparkMax intakePull) {
-        this.intakePull = intakePull;
+public class ShooterFireForwardCommand extends Command {
+    
+    SparkMax firingWheels;
+
+    public ShooterFireForwardCommand(SparkMax firingWheels) {
+        
+        this.firingWheels = firingWheels; 
     }
 
     @Override
@@ -18,12 +21,12 @@ public class IntakePullCommand extends Command {
 
     @Override
     public void execute(){
-        intakePull.set(-0.85);
+        firingWheels.set(1);
     }
 
     @Override
     public void end(boolean interrupted){
-        intakePull.set(0);
+        firingWheels.set(0);
     }
 
     @Override

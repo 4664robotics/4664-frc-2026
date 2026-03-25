@@ -20,6 +20,7 @@ import com.pathplanner.lib.util.swerve.SwerveSetpointGenerator;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -589,6 +590,12 @@ public class SwerveSubsystem extends SubsystemBase
     {
       zeroGyro();
     }
+  }
+
+  public void zeroGyroWithOffset()
+  {
+    zeroGyro();
+    resetOdometry(new Pose2d(getPose().getTranslation(), Rotation2d.fromDegrees(270)));
   }
 
   /**

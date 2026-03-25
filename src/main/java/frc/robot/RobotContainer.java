@@ -32,9 +32,12 @@ import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import java.io.File;
 import swervelib.SwerveInputStream;
 import frc.robot.commands.swervedrive.drivebase.IntakePullCommand;
-import frc.robot.commands.swervedrive.drivebase.IntakeSpinClockwiseCommand;
-import frc.robot.commands.swervedrive.drivebase.IntakeSpinCounterclockwiseCommand;
-import frc.robot.commands.swervedrive.drivebase.ShooterCommand;
+import frc.robot.commands.swervedrive.drivebase.IntakeRotateCommand;
+import frc.robot.commands.swervedrive.drivebase.ShooterAmmoGuideBackward;
+import frc.robot.commands.swervedrive.drivebase.ShooterAmmoGuideForward;
+import frc.robot.commands.swervedrive.drivebase.ShooterFireBackwardCommand;
+import frc.robot.commands.swervedrive.drivebase.ShooterFireForwardCommand;
+import frc.robot.commands.swervedrive.drivebase.IntakePushCommand;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a "declarative" paradigm, very
@@ -165,17 +168,20 @@ public class RobotContainer
 
 
     // commands and motor controllers (motor controllers are passed in here to keep code clean)
-    SparkMax ammoGuide = new SparkMax(0, MotorType.kBrushless);
-    SparkMax firingWheels = new SparkMax(0, MotorType.kBrushless);
-    SparkMax intakeSpin = new SparkMax(0, MotorType.kBrushless);
-    SparkMax intakePull = new SparkMax(0, MotorType.kBrushless);
-    DigitalInput intakeLimitSwitch = new DigitalInput(0);
+    SparkMax ammoGuide = new SparkMax(11, MotorType.kBrushless);
+    SparkMax firingWheels = new SparkMax(12, MotorType.kBrushless);
+    SparkMax intakeSpin = new SparkMax(10, MotorType.kBrushless);
+    SparkMax intakePull = new SparkMax(9, MotorType.kBrushless);
+    DigitalInput intakeLimitSwitchTop = new DigitalInput(0);
+    DigitalInput intakeLimitSwitchBottom = new DigitalInput(1);
 
-    ShooterCommand shooterCommand = new ShooterCommand(ammoGuide, firingWheels);
-    IntakeSpinClockwiseCommand intakeSpinClockwiseCommand = new IntakeSpinClockwiseCommand(intakeSpin, intakeLimitSwitch);
-    IntakeSpinCounterclockwiseCommand intakeSpinCounterclockwiseCommand = new IntakeSpinCounterclockwiseCommand(intakeSpin);
+    ShooterAmmoGuideForward shooterAmmoGuideForward = new ShooterAmmoGuideForward(ammoGuide);
+    ShooterAmmoGuideBackward shooterAmmoGuideBackward = new ShooterAmmoGuideBackward(ammoGuide);
+    ShooterFireForwardCommand shooterFireForwardCommand = new ShooterFireForwardCommand(firingWheels);
+    ShooterFireBackwardCommand shooterFireBackwardCommand = new ShooterFireBackwardCommand(firingWheels);
+    IntakeRotateCommand intakeRotateCommand = new IntakeRotateCommand(intakeSpin, intakeLimitSwitchBottom, intakeLimitSwitchTop, driverJoystick);
     IntakePullCommand intakePullCommand = new IntakePullCommand(intakePull);
-
+    IntakePushCommand intakePushCommand = new IntakePushCommand(intakePull); 
 
     if (RobotBase.isSimulation())
     {
@@ -220,10 +226,20 @@ public class RobotContainer
 
     } else
     {
-      driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
-      driverXbox.start().whileTrue(Commands.none());
-      driverXbox.back().whileTrue(Commands.none());
-      //driverXbox.leftBumper().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
+      driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyroWithOffset)));
+      driverXbox.leftBumper().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
+
+      driverXbox.rightTrigger().whileTrue(intakePullCommand);
+      driverXbox.x().whileTrue(intakePushCommand);
+
+
+      
+      driverJoystick.button(0).whileTrue(intakeRotateCommand);
+      
+      driverJoystick.button(3).toggleOnTrue(shooterFireForwardCommand);
+
+      driverJoystick.button(6).whileTrue(shooterAmmoGuideForward);
+      driverJoystick.button(7).whileTrue(shooterAmmoGuideBackward);
     }
 
   }

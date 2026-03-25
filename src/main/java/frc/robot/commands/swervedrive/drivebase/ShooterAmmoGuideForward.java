@@ -4,11 +4,14 @@ import com.revrobotics.spark.SparkMax;
 
 import edu.wpi.first.wpilibj2.command.Command;
 
-public class IntakeSpinCounterclockwiseCommand extends Command {
-    SparkMax intakeSpin;
 
-    public IntakeSpinCounterclockwiseCommand(SparkMax intakeSpin) {
-        this.intakeSpin = intakeSpin;
+public class ShooterAmmoGuideForward extends Command {
+    SparkMax ammoGuide;
+    
+
+    public ShooterAmmoGuideForward(SparkMax ammoGuide) {
+        this.ammoGuide = ammoGuide;
+         
     }
 
     @Override
@@ -18,12 +21,14 @@ public class IntakeSpinCounterclockwiseCommand extends Command {
 
     @Override
     public void execute(){
-        intakeSpin.set(0.1);
+        ammoGuide.set(-0.65);
+        
     }
 
     @Override
     public void end(boolean interrupted){
-        intakeSpin.set(0);
+        ammoGuide.set(0);
+        
     }
 
     @Override

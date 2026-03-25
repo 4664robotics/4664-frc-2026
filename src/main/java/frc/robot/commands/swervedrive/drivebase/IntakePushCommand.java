@@ -4,10 +4,10 @@ import com.revrobotics.spark.SparkMax;
 
 import edu.wpi.first.wpilibj2.command.Command;
 
-public class IntakePullCommand extends Command {
+public class IntakePushCommand extends Command {
     SparkMax intakePull;
 
-    public IntakePullCommand(SparkMax intakePull) {
+    public IntakePushCommand(SparkMax intakePull) {
         this.intakePull = intakePull;
     }
 
@@ -18,7 +18,7 @@ public class IntakePullCommand extends Command {
 
     @Override
     public void execute(){
-        intakePull.set(-0.85);
+        intakePull.set(0.85);
     }
 
     @Override
