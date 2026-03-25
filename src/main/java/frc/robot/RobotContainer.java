@@ -234,8 +234,8 @@ public class RobotContainer
 
 
       
-      driverJoystick.button(0).whileTrue(intakeRotateCommand);
-      
+      driverJoystick.button(1).whileTrue(intakeRotateCommand);
+
       driverJoystick.button(3).toggleOnTrue(shooterFireForwardCommand);
 
       driverJoystick.button(6).whileTrue(shooterAmmoGuideForward);

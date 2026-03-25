@@ -12,7 +12,7 @@ public class IntakeRotateCommand extends Command {
     DigitalInput limitSwitchTop;
     CommandJoystick joystick;
 
-    final double SPEED_MULT = 1.0;
+    final double SPEED_MULT = 0.28;
 
     public IntakeRotateCommand(SparkMax intakeSpin, DigitalInput limitSwitchBottom,DigitalInput limitSwitchTop, CommandJoystick joystick) {
         this.intakeSpin = intakeSpin;
@@ -28,14 +28,15 @@ public class IntakeRotateCommand extends Command {
 
     @Override
     public void execute(){
-        double joystickInput = joystick.getY();
+        double joystickInput = joystick.getRawAxis(1);
+
         //checks if joystick is being pulled back
         if (joystickInput > 0){
             if (limitSwitchTop.get()){
                 intakeSpin.set(joystickInput * SPEED_MULT);
             }
 
-        } else{//Checks if joystick is being pulled forward
+        } else { //Checks if joystick is being pulled forward
             if (limitSwitchBottom.get()) {
                 intakeSpin.set(joystickInput * SPEED_MULT);
             }
